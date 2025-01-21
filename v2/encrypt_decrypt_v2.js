@@ -35,5 +35,9 @@ function decrypt(encryptedData) {
   return decrypted;
 }
 
-console.log(encrypt("asif"));
+console.log(encrypt("ISTHIAQ"));
 console.log(decrypt("7774c78bb263ffcdb7579303ea26b8cfd0da1ba9867c48bc189eee806223b175"))
+console.log(decrypt("9a41edb084fabbe771901af5e98e222084a9e86154b07ddbe5b09a1df7678745"))
+
+console.log(decrypt("f716838a7616da73de3337829c23276e7a1e9ae4dfaa1cc6200609a1c83ecf11"))
+console.log(decrypt("12dbac01b3348238519e90d1bf8c46398f22fc0b9362c5b3433a119fcf3c42de"))
