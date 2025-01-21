@@ -73,6 +73,8 @@ promise3.then(() => console.log("Promise 3 Resolved"))
 promise.then(() => console.log("Promise 1 Resolved")).finally(() => console.log("Finally"))
 promise2.then(() => console.log("Promise 2 Resolved"))
 
+for(var i=0;i<10;i++){console.log(i)}
+console.log(i)
 /*
 nextTick
 Promise
