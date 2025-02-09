@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Dropdown at Cursor for Multiple Inputs</title>
+    <style>
+      /* Style the custom dropdown */
+      #dropdown-autocomplete {
+        font-size:13px;
+        display: none;
+        position: absolute;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        width: 150px;
+        max-height: 100px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      #dropdown-autocomplete div {
+        /* padding: 8px; */
+        padding: 3px;
+        cursor: pointer;
+      }
+      #dropdown-autocomplete div:hover {
+        background-color: #eee;
+      }
+      .input-with-autocomplete {
+        width: 300px;
+        padding: 8px;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Type {{cursor}} to trigger dropdown</h2>
+    <input
+      type="text"
+      class="input-with-autocomplete"
+      placeholder="Type something in input 1..."
+    />
+    <input
+      type="text"
+      class="input-with-autocomplete"
+      placeholder="Type something in input 2..."
+    />
+    <input
+      type="text"
+      class="input-with-autocomplete"
+      placeholder="Type something in input 3..."
+    />
+
+    <!-- Custom dropdown element -->
+    <div id="dropdown-autocomplete">
+      <div onclick="selectOption('Apple')">Apple</div>
+      <div onclick="selectOption('Orange')">Orange</div>
+      <div onclick="selectOption('Peach')">Peach</div>
+      <div onclick="selectOption('Melon')">Melon</div>
+      <div onclick="selectOption('Strawberry')">Strawberry</div>
+    </div>
+
+    <script>
+      const inputs = document.querySelectorAll(".input-with-autocomplete");
+      const dropdown = document.getElementById("dropdown-autocomplete");
+      let activeInput = null;
+
+      // Attach input listeners to each input field
+      inputs.forEach((input) => {
+        input.addEventListener("input", handleInput);
+        input.addEventListener("focus", () => {
+          activeInput = input;
+        });
+      });
+
+      function handleInput(event) {
+        const input = event.target;
+        const cursorIndex = input.selectionStart;
+        const value = input.value;
+
+        // Get text before and after the cursor
+        const beforeCursor = value.slice(0, cursorIndex);
+        const afterCursor = value.slice(cursorIndex);
+
+        // Check if inside `{{ }}` brackets
+        const insideBrackets =
+          /\{\{[^\}]*$/.test(beforeCursor) && /^[^\{]*\}\}/.test(afterCursor);
+        console.log("asif insideBrackets", insideBrackets);
+        if (insideBrackets) {
+          // Show the dropdown
+          dropdown.style.display = "block";
+
+          // Get cursor position and position the dropdown
+          const { left, top } = getCaretCoordinates(input, cursorIndex);
+          dropdown.style.left = `${left}px`;
+          dropdown.style.top = `${top + 25}px`;
+
+          // Focus the dropdown
+          //dropdown.setAttribute('tabindex', '0'); // Make it focusable
+          //dropdown.focus();
+        } else {
+          dropdown.style.display = "none";
+        }
+      }
+
+      // Hide dropdown when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!dropdown.contains(e.target) && e.target !== activeInput) {
+          dropdown.style.display = "none";
+        }
+      });
+
+      function selectOption(value) {
+        if (activeInput) {
+          const cursorIndex = activeInput.selectionStart;
+
+          // Find all matches for {{...}} in the text
+          const regex = /\{\{[^}]*\}\}/g;
+          let match;
+          let matchIndex = -1;
+
+          // Loop through each match and find the one closest to the cursor
+          while ((match = regex.exec(activeInput.value)) !== null) {
+            const start = match.index;
+            const end = start + match[0].length;
+
+            // Check if the cursor is within this match
+            if (cursorIndex >= start && cursorIndex <= end) {
+              matchIndex = start;
+              break;
+            }
+          }
+
+          // If a matching placeholder is found near the cursor, replace it
+          if (matchIndex !== -1) {
+            const before = activeInput.value.slice(0, matchIndex);
+            const after = activeInput.value.slice(matchIndex + match[0].length);
+            activeInput.value = `${before}{{${value}}}${after}`;
+
+            activeInput.focus();
+
+            // Set the cursor position after the newly inserted value
+            const newCursorPosition = before.length + `{{${value}}}`.length;
+            activeInput.setSelectionRange(newCursorPosition, newCursorPosition);
+          }
+        }
+
+        // Hide the dropdown
+        dropdown.style.display = "none";
+      }
+
+      // Get caret coordinates within the input
+      function getCaretCoordinates(input, index) {
+        const rect = input.getBoundingClientRect();
+        const span = document.createElement("span");
+        const style = window.getComputedStyle(input);
+        span.style.font = style.font;
+        span.style.whiteSpace = "pre";
+        span.textContent = input.value.substring(0, index);
+        document.body.appendChild(span);
+        const { width } = span.getBoundingClientRect();
+        span.remove();
+
+        return { left: rect.left + width, top: rect.top };
+      }
+    </script>
+  </body>
+</html>
